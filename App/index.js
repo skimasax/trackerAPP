@@ -15,12 +15,12 @@ app.use(express.urlencoded({ extended: false }));
 
 
 const authRoute = require("./Route/AuthRoute");
-const userRoute = require("./Route/UserRoute");
+const profileRoute = require("./Route/UserRoute");
 
 
 //create your routes
 app.use("/api/v1/auth", authRoute);
-app.use("/api/v1/user", userRoute);
+app.use("/api/v1/profile", profileRoute);
 
 app.listen(PORT, () => {
     console.log(`started on port ${PORT}`);

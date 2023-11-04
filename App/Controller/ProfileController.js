@@ -23,4 +23,24 @@ const getProfile = async(req,res)=> {
     });
 }
 
-module.exports = {getProfile}
+const updateProfile = async(req,res) => {
+    const {firstname,lastname,country} = req.body;
+    const loggedInUser = req.user;
+
+    //get the user details
+    const user = await UserService.findUserById(loggedInUser._id);
+
+    user.firstname = firstname,
+    user.lastname = lastname,
+    user.country = country
+
+    await user.save();
+
+    return res.status(200).json({
+        'status':true,
+        'message':'Profile Updated Successfully'
+    });
+
+}
+
+module.exports = {getProfile,updateProfile}

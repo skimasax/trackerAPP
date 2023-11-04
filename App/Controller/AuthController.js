@@ -14,7 +14,7 @@ const register = async(req,res) =>{
         //check that all fields are completed
     if(!firstname || !lastname || !email || !gender || !password || !country || !confirm_password)
     {
-        res.status(422).json({
+      return  res.status(422).json({
             status:false,
             'message':"Please complete the fields"
         })
@@ -23,7 +23,7 @@ const register = async(req,res) =>{
     //check the password
     if(password != confirm_password)
     {
-        res.status(422).json({
+       return res.status(422).json({
             status:false,
             'message':"Password do not match"
         })
@@ -33,7 +33,7 @@ const register = async(req,res) =>{
     const user = await UserService.findUserByEmail(email);
     if(user)
     {
-        res.status(422).json({
+      return  res.status(422).json({
             status:false,
             'message':"Email already exist"
         })
@@ -74,14 +74,14 @@ const register = async(req,res) =>{
  
   data.password=undefined;
 
-        res.status(201).json({
+      return  res.status(201).json({
             status:true,
             data: data,
             'message':"Signup successfully"
         })
     } catch (error) {
         console.log(error)
-        res.status(500).json({
+      return  res.status(500).json({
             'status':false,
             'message':"Error while trying to signup"
         })
@@ -99,7 +99,7 @@ const login = async(req, res) =>{
         const user = await User.findOne({email:email}).select("+password");
         if(!user)
         {
-            res.status(404).json({
+            return res.status(404).json({
                 'status':false,
                 'message':"User not found"
             });
@@ -110,15 +110,15 @@ const login = async(req, res) =>{
 
         if(!passwordCheck)
         {
-            res.status(422).json({
+          return res.status(422).json({
                 'status':false,
                 'message':"Password do not match"
             });
         }
 
-        if(user.verified_at == NULL)
+        if(user.verified_at == null)
         {
-            res.status(422).json({
+          return res.status(422).json({
                 'status':false,
                 'message':"Please verify your account"
             });
@@ -129,19 +129,93 @@ const login = async(req, res) =>{
 
         user.password=undefined;
 
-        res.status(200).json({
+       return res.status(200).json({
             'status':true,
             'data':user,token,
             'message':"Login successfully"
         })
     } catch (error) {
         console.log(error)
-        res.status(500).json({
+       return res.status(500).json({
             'status':false,
             'message':"Error while trying to signup"
         })
     }
 }
 
+const verifyEmail = async(req,res) => {
 
-module.exports = {register,login};
+    const {otp} = req.body;
+
+    //search for the otp
+    try {
+    const otpExist = await LoginOtp.findOne({otp:otp});
+    if(!otpExist)
+    {
+        return res.status(404).json({
+            'status':false,
+            'message':'Otp does not exist in our system'
+        });
+    }
+
+    const user = await User.findOne({_id:otpExist.user_id});
+    const currentDate = new Date();
+    user.verified_at = currentDate;
+    await user.save();
+    await LoginOtp.find({user_id:otpExist.user_id}).deleteMany();
+    return res.status(200).json({
+        'status':true,
+        'message':'Otp verified successfully'
+    });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            'status':false,
+            'message':"Error while trying to signup"
+        })
+    }
+
+}
+
+const resendOtp = async(req,res) => {
+    const {email} = req.body;
+
+    //verify the email exist in DB
+    const user = await UserService.findUserByEmail(email);
+    if(!user){
+        return res.status(404).json({
+            'status':false,
+            'message':"email does not exist in our system"
+        })
+    }
+
+    //generate random otp and send to the email
+    //generate radom 4 numbers as token
+    const otp = await cryptoToken.generateRandomNumber();
+    const message = `Dear ${user.firstname}, kindly verify your trackerApp account with this token: ${otp}`;
+
+    //save into Otp Table
+    await LoginOtp.create({
+        user_id:user._id,
+        otp:otp
+    })
+
+    //send email to the user
+const mailOptions = {
+from: 'bimbo@gmail.com',
+to: email,
+subject: 'TrackerApp Email Verification',
+text: message,
+};
+
+const mail = await transporter.sendMail(mailOptions);
+
+return res.status(200).json({
+    'status':true,
+    'message':'Otp resent successfully'
+});
+}
+
+
+
+module.exports = {register,login, verifyEmail,resendOtp};

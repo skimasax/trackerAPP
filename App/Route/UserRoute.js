@@ -1,8 +1,10 @@
 const express = require("express");
-const router = express.Router();
 const authenticateToken = require("../Middleware/Auth");
+const router = express.Router();
+
+const {getProfile} = require("../Controller/ProfileController");
 
 
 
 router.use(authenticateToken);
-router.post('/register');
+router.post('/profile', getProfile);

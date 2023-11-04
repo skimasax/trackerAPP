@@ -30,7 +30,8 @@ const userSchema = new mongoose.Schema({
     },
     verified_at: {
         type: String,
-        required: false
+        required: false,
+        default:null,
         },
 },{
     timestamps: true

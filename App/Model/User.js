@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add your country']
     },
+    verified_at: {
+        type: String,
+        required: false
+        },
 },{
     timestamps: true
 })

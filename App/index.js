@@ -1,6 +1,12 @@
 const express = require("express");
 const env = require("dotenv").config();
 const mongoose = require("../App/Config/Database");
+const cryptoToken = require("../App/Config/Token");
+const token = cryptoToken.generateRandomToken(32);
+const nodemailer = require('nodemailer');
+
+
+
 const app = express();
 const PORT = process.env.PORT;
 

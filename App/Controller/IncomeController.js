@@ -45,7 +45,8 @@ const deleteIncome = async(req,res) => {
     const Id = req.params.id;
 
     //find the income
-    const existingIncome = await income.findById(Id);
+    const existingIncome = await income.findOne({_id:Id});
+ 
     if(!existingIncome)
     {
         return res.status(404).json({
@@ -56,7 +57,35 @@ const deleteIncome = async(req,res) => {
 
     await income.findByIdAndDelete(Id);
 
+    return res.status(200).json({
+        'status':true,
+        'message':'Income deleted successfully'
+    });
+
 
 }
 
-module.exports = {recordIncome,deleteIncome}
+const getIncome = async(req,res)=> {
+    const user = req.user;
+
+    const incomes = await income
+    .find({user_id: user._id})
+    .sort({createdAt: -1});
+
+
+    if(incomes.length < 0)
+    {
+        return res.status(404).json({
+            'status':false,
+            'data':[]
+        })
+    }
+
+    return res.status(200).json({
+        'status':false,
+        'data':incomes
+    })
+
+}
+
+module.exports = {recordIncome,deleteIncome, getIncome}

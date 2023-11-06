@@ -1,6 +1,7 @@
 const express = require("express");
 const User = require("../Model/User");
 const UserService = require("../Service/UserService");
+const uploadImage = require("../Service/UploadService");
 
 
 
@@ -24,15 +25,19 @@ const getProfile = async(req,res)=> {
 }
 
 const updateProfile = async(req,res) => {
-    const {firstname,lastname,country} = req.body;
+    const {firstname,lastname,country,image} = req.body;
     const loggedInUser = req.user;
 
     //get the user details
     const user = await UserService.findUserById(loggedInUser._id);
 
+    //uploading image to cloudinary
+    const uploadedImage = await uploadImage.uploadImage(req, res, "TrackerApp");
+
     user.firstname = firstname,
     user.lastname = lastname,
-    user.country = country
+    user.country = country,
+    user.image = uploadedImage.secure_url,
 
     await user.save();
 
@@ -42,5 +47,7 @@ const updateProfile = async(req,res) => {
     });
 
 }
+
+
 
 module.exports = {getProfile,updateProfile}

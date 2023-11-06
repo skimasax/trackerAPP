@@ -40,4 +40,23 @@ const newIncome = await incomeService.recordAllIncome(user._id,amount,details);
 
 }
 
-module.exports = {recordIncome}
+const deleteIncome = async(req,res) => {
+    const user = req.user;
+    const Id = req.params.id;
+
+    //find the income
+    const existingIncome = await income.findById(Id);
+    if(!existingIncome)
+    {
+        return res.status(404).json({
+            'status':true,
+            'message':'Income does not exist'
+        });
+    }
+
+    await income.findByIdAndDelete(Id);
+
+
+}
+
+module.exports = {recordIncome,deleteIncome}
